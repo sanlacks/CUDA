@@ -12,6 +12,7 @@
 	}										\
 }
 
+// 验证核函数
 void checkResult(float* hostRef, float* gpuRef, const int N)
 {
 	double epsilon = 1.0E-8;
@@ -79,6 +80,7 @@ int main(int argc, char **argv)
 	initialData(h_A, nElem);
 	initialData(h_B, nElem);
 
+        // memset函数功能：为内存填充某个特定的值
 	memset(hostRef, 0, nBytes);
 	memset(gpuRef, 0, nBytes);
 
@@ -92,7 +94,7 @@ int main(int argc, char **argv)
 	cudaMemcpy(d_A, h_A, nBytes, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_B, h_B, nBytes, cudaMemcpyHostToDevice);
 
-	//invoke kernel at host side
+	//invoke kernel at host side 放入一个块内， 一个块有32个线程
 	dim3 block(nElem);
 	dim3 grid(nElem / block.x);
 
