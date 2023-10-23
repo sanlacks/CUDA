@@ -27,6 +27,28 @@ void readCSV(std::vector<float>& hostData, std::ifstream& file, int& lineCount) 
     }
 }
 
+// 滑动平均滤波函数
+std::vector<float> movingAverage(const std::vector<float>& data, int windowSize) {
+    std::vector<float> smoothedData;
+    int dataLength = data.size();
+
+    for (int i = 0; i < dataLength; ++i) {
+        float sum = 0.0f;
+        int count = 0;
+
+        for (int j = i - windowSize / 2; j <= i + windowSize / 2; ++j) {
+            if (j >= 0 && j < dataLength) {
+                sum += data[j];
+                count++;
+            }
+        }
+
+        float average = sum / count;
+        smoothedData.push_back(average);
+    }
+
+    return smoothedData;
+}
 
 int main()
 {
@@ -44,7 +66,9 @@ int main()
 
     //读取csv文件
     readCSV(Data, file, LENGTH);
-
+    // 对原始数据应用滑动平均滤波
+    int windowSize1 = 10; // 设置滑动窗口大小
+    std::vector<float> smoothedData = movingAverage(Data, windowSize1);
     
 
     // 分配和传输数据到CUDA设备
@@ -74,26 +98,23 @@ int main()
 
     //double fs = 1 / 0.0001220703125; //采样率
     double fs = 100000; //采样率
-    //for (i = 0; i < LENGTH / 2; i++)
-    //{
-    //    printf("i=%d\tf= %6.1fHz\tRealAmp=%3.1f\t", i, fs * i / LENGTH, CompData[i].x * 2.0 / LENGTH);
-    //    printf("ImagAmp=+%3.1fi", CompData[i].y * 2.0 / LENGTH);
-    //    printf("\n");
-    //}
 
-    //创建频率轴
+    // 创建频率轴
     int n = LENGTH / 2;
-    std::vector<double> x(n), y(n);
-    for (int i = 0; i < LENGTH / 2; ++i) {
+    std::vector<float> x(n), y(n);
+    for (int i = 0; i < LENGTH / 2; ++i)
+    {
         x.at(i) = fs * i / LENGTH;
         y.at(i) = abs(CompData[i].x) * 2.0 / LENGTH;
-
     }
 
-    //在C++中使用matplotlibcpp绘制FFT结果的振幅谱
-    plt::plot(x, y);
-    //plt::pause(2);
-    plt::xlim(-10, 10000);
+    // 滑动平均滤波
+    int windowSize2 = 5; // 设置滑动窗口大小
+    std::vector<float> smoothedY = movingAverage(y, windowSize2);
+
+    // 使用matplotlibcpp绘制结果
+    plt::plot(x, smoothedY); // 使用滤波后的数据进行绘图
+    plt::xlim(-100, 3000);
     plt::xlabel("Frequency/hz");
     plt::ylabel("Amplitude");
     plt::grid('b');
