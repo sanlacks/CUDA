@@ -43,6 +43,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExternalIncludePath>D:\python\include;D:\python\Lib\site-packages\numpy\core\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <IncludePath>D:\Codes\eigen-3.4.0;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>D:\Codes\eigen-3.4.0;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -84,6 +88,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lm.cpp" />
+    <ClCompile Include="movingAverage.cpp" />
+    <ClCompile Include="readCSV.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="lm.hpp" />
+    <ClInclude Include="movingAverage.hpp" />
+    <ClInclude Include="readCSV.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

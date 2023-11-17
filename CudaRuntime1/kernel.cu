@@ -1,63 +1,30 @@
-﻿#include <math.h>
-#include <vector>
-#include <cufft.h>
-#include <fstream>
+﻿#include <cufft.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <complex>
-#include <iostream>
 #include <cuda_runtime.h>
 #include "matplotlibcpp.h" 
-#include "device_launch_parameters.h"
 
+#include "movingAverage.hpp"
+#include "readCSV.hpp"
+#include "lm.hpp"
+
+
+using namespace Eigen;
 using namespace std;
 namespace plt = matplotlibcpp;
 
 
-//读取CSV文件并返回行数
-void readCSV(std::vector<float>& hostData, std::ifstream& file, int& lineCount) {
-    std::string line;
-    lineCount = 0;
-
-    while (std::getline(file, line)) {
-        lineCount++;
-        hostData.push_back(std::stof(line));
-    }
-}
-
-// 滑动平均滤波函数
-std::vector<float> movingAverage(const std::vector<float>& data, int windowSize) {
-    std::vector<float> smoothedData;
-    int dataLength = data.size();
-
-    for (int i = 0; i < dataLength; ++i) {
-        float sum = 0.0f;
-        int count = 0;
-
-        for (int j = i - windowSize / 2; j <= i + windowSize / 2; ++j) {
-            if (j >= 0 && j < dataLength) {
-                sum += data[j];
-                count++;
-            }
-        }
-
-        float average = sum / count;
-        smoothedData.push_back(average);
-    }
-
-    return smoothedData;
-}
 
 int main()
 {
     // 打开CSV文件
-    std::ifstream file("D:\\Codes\\VisualStudio\\signal13.csv");
+    ifstream file("D:\\Codes\\VisualStudio\\signal13.csv");
 
     // 检查文件是否成功打开
     if (!file.is_open()) {
-        std::cerr << "无法打开文件" << std::endl;
+        cerr << "无法打开文件" << endl;
         return 1;
     }
 
@@ -68,12 +35,12 @@ int main()
     readCSV(Data, file, LENGTH);
     // 对原始数据应用滑动平均滤波
     int windowSize1 = 10; // 设置滑动窗口大小
-    std::vector<float> smoothedData = movingAverage(Data, windowSize1);
-    
+    vector<float> smoothedData = movingAverage(Data, windowSize1);
+
 
     // 分配和传输数据到CUDA设备
     cufftComplex* CompData = (cufftComplex*)malloc(LENGTH * sizeof(cufftComplex));//allocate memory for the data in host
- 
+
     for (int i = 0; i < LENGTH; i++)
     {
         CompData[i].x = Data[i];
@@ -123,6 +90,41 @@ int main()
     cufftDestroy(plan);
     free(CompData);
     cudaFree(d_fftData);
+
+
+    // 打开CSV文件
+    ifstream file2("D:\\Codes\\VisualStudio\\data.csv");
+
+    // data
+    vector<double> x_data;
+    vector<double> y_data;
+
+    string line;
+    while (getline(file2, line)) {
+
+        // 使用字符串流分割CSV行
+        istringstream iss(line);
+        string token;
+
+        // 逐列读取数据并转换为double类型
+        getline(iss, token, ',');
+        double x_value = stod(token);
+        x_data.push_back(x_value);
+
+        getline(iss, token, ',');
+        double y_value = stod(token);
+        y_data.push_back(y_value);
+    }
+
+    // 关闭文件
+    file2.close();
+
+    // fit curve
+    Vector4d para = fit_curve(x_data, y_data);
+    cout << "The optimal parameters are: " << para.transpose() << endl;
+
+
+
 
     return 0;
 }
