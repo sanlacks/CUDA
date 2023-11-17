@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CudaCompile Include="kernel.cu" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="滑动平均滤波">
+      <UniqueIdentifier>{1333b1ef-7f4d-4e0e-94a7-f2f013cd2177}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CSV读取">
+      <UniqueIdentifier>{425973eb-09e3-49d2-ac13-47561fd25607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LM拟合">
+      <UniqueIdentifier>{4223d399-e5a1-4a95-8a52-610eb1eba5a4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="movingAverage.cpp">
+      <Filter>滑动平均滤波</Filter>
+    </ClCompile>
+    <ClCompile Include="readCSV.cpp">
+      <Filter>CSV读取</Filter>
+    </ClCompile>
+    <ClCompile Include="lm.cpp">
+      <Filter>LM拟合</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="movingAverage.hpp">
+      <Filter>滑动平均滤波</Filter>
+    </ClInclude>
+    <ClInclude Include="readCSV.hpp">
+      <Filter>CSV读取</Filter>
+    </ClInclude>
+    <ClInclude Include="lm.hpp">
+      <Filter>LM拟合</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
