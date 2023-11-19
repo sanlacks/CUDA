@@ -1,23 +1,25 @@
 #include <vector>
 #include "movingAverage.hpp"
 
-std::vector<float> movingAverage(const std::vector<float>& data, int windowSize) {
-    std::vector<float> smoothedData;
+std::vector<double> movingAverage(const std::vector<double>& data, int windowSize) {
     int dataLength = data.size();
+    std::vector<double> smoothedData(dataLength);
 
     for (int i = 0; i < dataLength; ++i) {
-        float sum = 0.0f;
+        double sum = 0.0;
         int count = 0;
 
-        for (int j = i - windowSize / 2; j <= i + windowSize / 2; ++j) {
-            if (j >= 0 && j < dataLength) {
-                sum += data[j];
-                count++;
-            }
+        // 调整循环范围确保窗口两侧有足够的数据点
+        int start = std::max(0, i - windowSize / 2);
+        int end = std::min(dataLength - 1, i + windowSize / 2);
+
+        for (int j = start; j <= end; ++j) {
+            sum += data[j];
+            count++;
         }
 
-        float average = sum / count;
-        smoothedData.push_back(average);
+        double average = sum / count;
+        smoothedData[i] = average;
     }
 
     return smoothedData;

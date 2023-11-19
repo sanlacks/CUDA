@@ -3,4 +3,4 @@
 
 #include <vector>
 
-std::vector<float> movingAverage(const std::vector<float>& data, int windowSize);
+std::vector<double> movingAverage(const std::vector<double>& data, int windowSize);

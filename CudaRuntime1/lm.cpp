@@ -10,7 +10,9 @@ using namespace std;
 
 // y = k1 * x^3 + k2 * x^2 + k3 * x + k4
 double func(double x, const Vector4d& para) {
+
     return para[0] * pow(x, 3) + para[1] * pow(x, 2) + para[2] * x + para[3];
+
 }
 
 // jacobi matrix

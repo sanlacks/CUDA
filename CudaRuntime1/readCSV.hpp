@@ -5,4 +5,5 @@
 #include <fstream>
 #include <string>
 
-void readCSV(std::vector<float>& hostData, std::ifstream& file, int& lineCount);
+void readCSV(std::vector<double>& x, std::vector<double>& y, std::ifstream& file, int& lineCount);
+void writeCSV(const std::vector<double>& data, const std::string& filename);
