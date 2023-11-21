@@ -41,7 +41,7 @@ Vector4d fit_curve(const vector<double>& x, const vector<double>& y, int iter_nu
     for (int i = 0; i < x.size(); i++) {
         r_past[i] = y[i] - y_gj[i];
     }
-    cout << J.rows() << " " << J.cols() << " " << r_past.size() << endl;
+    //cout << J.rows() << " " << J.cols() << " " << r_past.size() << endl;
     VectorXd g = J.transpose() * r_past;
 
     double tao = 1e-3; // (1e-8, 1)
