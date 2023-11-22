@@ -37,7 +37,7 @@ int main()
     vector<double> x_data1(LENGTH);
     vector<double> y_data1(LENGTH);
     vector<double> lmy_data1(LENGTH);
-    //vector<double> lmy_data11(LENGTH);
+    
 
     vector<double> x_data2(LENGTH);
     vector<double> y_data2(LENGTH);
@@ -74,7 +74,7 @@ int main()
     // 对原始数据应用滑动平均滤波
     int windowSize1 = 5; // 设置滑动窗口大小
 
-    int dataLength = y_data1.size();
+    int n = y_data1.size();
 
     vector<double> smoothedy_data1 = movingAverage(y_data1, windowSize1);
 
@@ -98,21 +98,20 @@ int main()
 
     //lm拟合
     int i = 0;
-    int Nl = x_data1.size();
-
-    for (i=0;i<Nl;i++){   
+    
+    for (i = 0; i < n; i++){   
         lmy_data1.push_back(func(x_data1[i], para1));
     }
 
-    for (i = 0; i < Nl; i++) {
+    for (i = 0; i < n; i++) {
         lmy_data2.push_back(func(x_data2[i], para2));
     }
 
-    for (i = 0; i < Nl; i++) {
+    for (i = 0; i < n; i++) {
         lmy_data3.push_back(func(x_data3[i], para3));
     }
 
-    for (i = 0; i < Nl; i++) {
+    for (i = 0; i < n; i++) {
         lmy_data4.push_back(func(x_data4[i], para4));
     }
 
@@ -147,80 +146,130 @@ int main()
     //plt::legend();
     //plt::show();
  
+    fftw_complex* in1, * out1;
+    fftw_complex* in2, * out2;
+    fftw_complex* in3, * out3;
+    fftw_complex* in4, * out4;
+    fftw_plan p1;
+    fftw_plan p2;
+    fftw_plan p3;
+    fftw_plan p4;
+    in1 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    out1 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    p1 = fftw_plan_dft_1d(n, in1, out1, FFTW_FORWARD, FFTW_MEASURE);
 
-    // 将 lmy_data1 复制到 GPU 内存
-    double* d_lmy_data1;
-    cudaMalloc((void**)&d_lmy_data1, Nl * sizeof(double));
-    cudaMemcpy(d_lmy_data1, lmy_data1.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
-    // 创建 CUFFT 计划
-    cufftHandle plan;
-    cufftPlan1d(&plan, Nl, CUFFT_Z2Z, 1);
-    // 执行 FFT
-    cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data1, (cufftDoubleComplex*)d_lmy_data1, CUFFT_FORWARD);
-    // 将结果传回主机
-    cudaMemcpy(lmy_data1.data(), d_lmy_data1, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+    in2 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    out2 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    p2 = fftw_plan_dft_1d(n, in2, out2, FFTW_FORWARD, FFTW_MEASURE);
 
-    writeCSV(lmy_data1, "lmy_data1_fft.csv");
+    in3 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    out3 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    p3 = fftw_plan_dft_1d(n, in3, out3, FFTW_FORWARD, FFTW_MEASURE);
 
-    // 将 lmy_data2 复制到 GPU 内存
-    double* d_lmy_data2;
-    cudaMalloc((void**)&d_lmy_data2, Nl * sizeof(double));
-    cudaMemcpy(d_lmy_data2, lmy_data2.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
-    // 创建 CUFFT 计划
-    
-    //cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
-    // 执行 FFT
-    cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data2, (cufftDoubleComplex*)d_lmy_data2, CUFFT_FORWARD);
-    // 将结果传回主机
-    cudaMemcpy(lmy_data2.data(), d_lmy_data2, Nl * sizeof(double), cudaMemcpyDeviceToHost);
-    
-    // 将 lmy_data3 复制到 GPU 内存
-    double* d_lmy_data3;
-    cudaMalloc((void**)&d_lmy_data3, Nl * sizeof(double));
-    cudaMemcpy(d_lmy_data3, lmy_data3.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
-    // 创建 CUFFT 计划
-    
-    //cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
-    // 执行 FFT
-    cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data3, (cufftDoubleComplex*)d_lmy_data3, CUFFT_FORWARD);
-    // 将结果传回主机
-    cudaMemcpy(lmy_data3.data(), d_lmy_data3, Nl * sizeof(double), cudaMemcpyDeviceToHost);
-    
-    // 将 lmy_data4 复制到 GPU 内存
-    double* d_lmy_data4;
-    cudaMalloc((void**)&d_lmy_data4, Nl * sizeof(double));
-    cudaMemcpy(d_lmy_data4, lmy_data4.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
-    // 创建 CUFFT 计划
-    
-    //cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
-    // 执行 FFT
-    cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data4, (cufftDoubleComplex*)d_lmy_data4, CUFFT_FORWARD);
-    // 将结果传回主机
-    cudaMemcpy(lmy_data4.data(), d_lmy_data4, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+    in4 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    out4 = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
+    p4 = fftw_plan_dft_1d(n, in4, out4, FFTW_FORWARD, FFTW_MEASURE);
 
-    // 销毁 CUFFT 计划和 GPU 内存
-    cufftDestroy(plan);
-    
-    cudaFree(d_lmy_data1);
-    cudaFree(d_lmy_data2);
-    cudaFree(d_lmy_data3);
-    cudaFree(d_lmy_data4);
+   
+    for (i = 0; i < n; i++)
+    {
+        in1[i][0] = lmy_data1[i];
+        in1[i][1] = 1;
+
+        in2[i][0] = lmy_data2[i];
+        in2[i][1] = 1;
+
+        in3[i][0] = lmy_data3[i];
+        in3[i][1] = 1;
+
+        in4[i][0] = lmy_data4[i];
+        in4[i][1] = 1;
+    }
+
+    fftw_execute(p1);
+    fftw_execute(p2);
+    fftw_execute(p3);
+    fftw_execute(p4);
+    fftw_destroy_plan(p1);
+    fftw_destroy_plan(p2);
+    fftw_destroy_plan(p3);
+    fftw_destroy_plan(p4);
+
+
+
+    //// 将 lmy_data1 复制到 GPU 内存
+    //double* d_lmy_data1;
+    //cudaMalloc((void**)&d_lmy_data1, Nl * sizeof(double));
+    //cudaMemcpy(d_lmy_data1, lmy_data1.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
+    //// 创建 CUFFT 计划
+    //cufftHandle plan;
+    //cufftPlan1d(&plan, Nl, CUFFT_Z2Z, 1);
+    //// 执行 FFT
+    //cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data1, (cufftDoubleComplex*)d_lmy_data1, CUFFT_FORWARD);
+    //// 将结果传回主机
+    //cudaMemcpy(lmy_data1.data(), d_lmy_data1, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+
+    //writeCSV(lmy_data1, "lmy_data1_fft.csv");
+
+    //// 将 lmy_data2 复制到 GPU 内存
+    //double* d_lmy_data2;
+    //cudaMalloc((void**)&d_lmy_data2, Nl * sizeof(double));
+    //cudaMemcpy(d_lmy_data2, lmy_data2.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
+    //// 创建 CUFFT 计划
+    //
+    ////cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
+    //// 执行 FFT
+    //cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data2, (cufftDoubleComplex*)d_lmy_data2, CUFFT_FORWARD);
+    //// 将结果传回主机
+    //cudaMemcpy(lmy_data2.data(), d_lmy_data2, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+    //
+    //// 将 lmy_data3 复制到 GPU 内存
+    //double* d_lmy_data3;
+    //cudaMalloc((void**)&d_lmy_data3, Nl * sizeof(double));
+    //cudaMemcpy(d_lmy_data3, lmy_data3.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
+    //// 创建 CUFFT 计划
+    //
+    ////cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
+    //// 执行 FFT
+    //cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data3, (cufftDoubleComplex*)d_lmy_data3, CUFFT_FORWARD);
+    //// 将结果传回主机
+    //cudaMemcpy(lmy_data3.data(), d_lmy_data3, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+    //
+    //// 将 lmy_data4 复制到 GPU 内存
+    //double* d_lmy_data4;
+    //cudaMalloc((void**)&d_lmy_data4, Nl * sizeof(double));
+    //cudaMemcpy(d_lmy_data4, lmy_data4.data(), Nl * sizeof(double), cudaMemcpyHostToDevice);
+    //// 创建 CUFFT 计划
+    //
+    ////cufftPlan1d(&plan1, Nl, CUFFT_Z2Z, 1);
+    //// 执行 FFT
+    //cufftExecZ2Z(plan, (cufftDoubleComplex*)d_lmy_data4, (cufftDoubleComplex*)d_lmy_data4, CUFFT_FORWARD);
+    //// 将结果传回主机
+    //cudaMemcpy(lmy_data4.data(), d_lmy_data4, Nl * sizeof(double), cudaMemcpyDeviceToHost);
+
+    //// 销毁 CUFFT 计划和 GPU 内存
+    //cufftDestroy(plan);
+    //
+    //cudaFree(d_lmy_data1);
+    //cudaFree(d_lmy_data2);
+    //cudaFree(d_lmy_data3);
+    //cudaFree(d_lmy_data4);
 
     //double fs = 1 / 0.0001220703125; //采样率
     double fs = 1000; //采样率
 
     
     // 创建频率轴1
-    int n = Nl/2;
-    std::vector<double> x1(n), y1(n);
-    std::vector<double> x2(n), y2(n);
-    std::vector<double> x3(n), y3(n);
-    std::vector<double> x4(n), y4(n);
+    int L = n/2;
+    std::vector<double> x1(L), y1(L);
+    std::vector<double> x2(L), y2(L);
+    std::vector<double> x3(L), y3(L);
+    std::vector<double> x4(L), y4(L);
     
-    for (int i = 0; i < Nl/2; ++i){
+    for (int i = 0; i < L; ++i){
 
-        x1.at(i) = fs * i / Nl;
-        y1.at(i) = abs(lmy_data1[i]) * 2.0 / Nl;
+        x1.at(i) = fs * i / n;
+        y1.at(i) = abs(out1[i][0]) * 2.0 / n;
 
     }
     // 使用max_element 查找最大值的迭代器
@@ -229,10 +278,10 @@ int main()
     //cout << "最大值是: " << *maxElement1 << std::endl;
 
     // 创建频率轴2
-    for (int i = 0; i < Nl / 2; ++i) {
+    for (int i = 0; i < L; ++i) {
 
-        x2.at(i) = fs * i / Nl;
-        y2.at(i) = abs(lmy_data2[i]) * 2.0 / Nl;
+        x2.at(i) = fs * i / n;
+        y2.at(i) = abs(out1[i][0]) * 2.0 / n;
 
     }
     // 使用max_element 查找最大值的迭代器
@@ -241,10 +290,10 @@ int main()
     //cout << "最大值是: " << *maxElement2 << std::endl;
 
     // 创建频率轴3
-    for (int i = 0; i < Nl / 2; ++i) {
+    for (int i = 0; i < L; ++i) {
 
-        x3.at(i) = fs * i / Nl;
-        y3.at(i) = abs(lmy_data3[i]) * 2.0 / Nl;
+        x3.at(i) = fs * i / n;
+        y3.at(i) = abs(out1[i][0]) * 2.0 / n;
 
     }
     // 使用max_element 查找最大值的迭代器
@@ -253,10 +302,10 @@ int main()
     //cout << "最大值是: " << *maxElement3 << std::endl;
 
     // 创建频率轴4
-    for (int i = 0; i < Nl / 2; ++i) {
+    for (int i = 0; i < L; ++i) {
 
-        x4.at(i) = fs * i / Nl;
-        y4.at(i) = abs(lmy_data4[i]) * 2.0 / Nl;
+        x4.at(i) = fs * i / n;
+        y4.at(i) = abs(out1[i][0]) * 2.0 / n;
 
     }
     // 使用max_element 查找最大值的迭代器
@@ -266,40 +315,45 @@ int main()
     
 
     // 滑动平均滤波
-    int windowSize2 = 5; // 设置滑动窗口大小
-   vector<double> smoothedY1 = movingAverage(y1, windowSize2);
+   // int windowSize2 = 10; // 设置滑动窗口大小
+   //vector<double> smoothedY1 = movingAverage(y1, windowSize2);
 
-   vector<double> smoothedY2 = movingAverage(y2, windowSize2);
+   //vector<double> smoothedY2 = movingAverage(y2, windowSize2);
 
-   vector<double> smoothedY3 = movingAverage(y3, windowSize2);
+   //vector<double> smoothedY3 = movingAverage(y3, windowSize2);
 
-   vector<double> smoothedY4 = movingAverage(y4, windowSize2);
+   //vector<double> smoothedY4 = movingAverage(y4, windowSize2);
 
 
-
+    
+    double y = *maxElement1;
+    int maxIndex = distance(y1.begin(), maxElement1);
+    //double x_d = x1[maxIndex];
+    printf("%lf,%lf", x1[maxIndex], y);
 
     // 使用matplotlibcpp绘制结果   
-    plt::plot(x1, smoothedY1); // 使用滤波后的数据进行绘图
+    plt::plot(x1, y1); // 使用滤波后的数据进行绘图
     //plt::xlim(-100, 3000);
     plt::xlabel("Frequency/hz");
     plt::ylabel("Amplitude");
    // plt::grid('b');
     plt::title("Data 1 Frequency-Amplitude");
+    plt::text(10, 1, "(8.333333,1.008935)");
     plt::show();
 
-    plt::plot(x2, smoothedY2);
+    plt::plot(x2, y2);
     plt::xlabel("Frequency/hz");
     plt::ylabel("Amplitude");
     plt::title("Data 2 Frequency-Amplitude");
     //plt::show();
 
-    plt::plot(x3, smoothedY3);
+    plt::plot(x3, y3);
     plt::xlabel("Frequency/hz");
     plt::ylabel("Amplitude");
     plt::title("Data 3 Frequency-Amplitude");
     //plt::show();
 
-    plt::plot(x4, smoothedY4);
+    plt::plot(x4, y4);
     plt::xlabel("Frequency/hz");
     plt::ylabel("Amplitude");
     plt::title("Data 4 Frequency-Amplitude");
